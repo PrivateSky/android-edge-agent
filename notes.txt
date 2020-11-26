@@ -1,0 +1,12 @@
+Android Studio 4.1
+
+Install NDK
+    SDK Manager > SDK Tools > Show Package Details > NDK (Side by side) > 21.3.6528147
+    
+    
+#App Info > Permissions > (3 dots) > All permissions >  
+
+Go inside app/src/main/assets/nodejs-project/ and run
+    npm install
+
+
