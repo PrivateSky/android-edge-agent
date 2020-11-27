@@ -32,14 +32,14 @@ public class MainActivity extends AppCompatActivity {
     public static boolean _startedNodeAlready=false;
 
     /**Relative path to /src/main/assets/nodejs-project folder*/
-//    public static String MAIN_NODE_SCRIPT = "/epi-workspace/bin/MobileServerLauncher.js";
-    public static String MAIN_NODE_SCRIPT = "/main.js";
+    public static String MAIN_NODE_SCRIPT = "/epi-workspace/bin/MobileServerLauncher.js";
+//    public static String MAIN_NODE_SCRIPT = "/main.js";
 
     public static int NODE_PORT = 3000;
 
     /**First page to call once the Node server is up and running*/
-    public static String INDEX_PAGE = "/index.html";
-//    public static String INDEX_PAGE = "/";
+//    public static String INDEX_PAGE = "/index.html";
+    public static String INDEX_PAGE = "/";
 
 
     @Override
@@ -98,11 +98,14 @@ public class MainActivity extends AppCompatActivity {
 //        final TextView textViewVersions = (TextView) findViewById(R.id.tvVersions);
         final WebView myWebView = (WebView) findViewById(R.id.myWebView);
 
+        myWebView.setWebViewClient(new InnerWebViewClient());
+
         buttonVersions.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
 //                URL localNodeServer = new URL("http://localhost:" + NODE_PORT  + INDEX_PAGE);
-                myWebView.loadUrl("http://localhost:" + NODE_PORT  + INDEX_PAGE);
+//                myWebView.loadUrl("http://localhost:" + NODE_PORT  + INDEX_PAGE);
+                myWebView.loadUrl("https://abctimetracking.com");
 
 //                //Network operations should be done in the background.
 //                new AsyncTask<Void,Void,String>() {
