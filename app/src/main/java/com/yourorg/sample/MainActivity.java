@@ -30,6 +30,16 @@ public class MainActivity extends AppCompatActivity {
     //We just want one instance of node running in the background.
     public static boolean _startedNodeAlready=false;
 
+    /**Relative path to /src/main/assets/nodejs-project folder*/
+//    public static String MAIN_NODE_SCRIPT = "/epi-workspace/bin/MobileServerLauncher.js";
+    public static String MAIN_NODE_SCRIPT = "/main.js";
+
+    public static int NODE_PORT = 3000;
+
+    /**First page to call once the Node server is up and running*/
+    public static String INDEX_PAGE = "/index.html";
+//    public static String INDEX_PAGE = "/";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,13 +55,14 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     //The path where we expect the node project to be at runtime.
                     String nodeDir=getApplicationContext().getFilesDir().getAbsolutePath()+"/nodejs-project";
+                    File nodeDirReference=new File(nodeDir);
+
                     if (wasAPKUpdated()) {
                         Log.d(TAG, "APK updated. Trigger re-installation of node asset folder");
 
                         long t1 = System.currentTimeMillis();
 
                         //Recursively delete any existing nodejs-project.
-                        File nodeDirReference=new File(nodeDir);
                         if (nodeDirReference.exists()) {
                             deleteFolderRecursively(new File(nodeDir));
                         }
@@ -66,11 +77,16 @@ public class MainActivity extends AppCompatActivity {
                         saveLastUpdateTime();
                     }
 
-                    Log.i(TAG, "Initiate startNodeWithArguments(...) call");
-                    Integer retVal = startNodeWithArguments(new String[]{"node",
-                            nodeDir+"/epi-workspace/bin/MobileServerLauncher.js"
-                    });
-                    Log.i(TAG, "run: xxx Returned value : " + retVal);
+                    if (nodeDirReference.exists()) {
+                        Log.i(TAG, "Initiate startNodeWithArguments(...) call");
+                        Integer retVal = startNodeWithArguments(new String[]{"node",
+                                nodeDir + MAIN_NODE_SCRIPT
+                        });
+                        Log.i(TAG, "run: xxx Returned value : " + retVal);
+                    }
+                    else {
+                        Log.i(TAG, "Folder  " + nodeDirReference.getAbsolutePath() + " does not exists" );
+                    }
 
 
                 }
@@ -89,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                     protected String doInBackground(Void... params) {
                         String nodeResponse="";
                         try {
-                            URL localNodeServer = new URL("http://localhost:3000/index.html");
+                            URL localNodeServer = new URL("http://localhost:" + NODE_PORT  + INDEX_PAGE);
                             BufferedReader in = new BufferedReader(
                                     new InputStreamReader(localNodeServer.openStream()));
                             String inputLine;
