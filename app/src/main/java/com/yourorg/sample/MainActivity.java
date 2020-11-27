@@ -6,6 +6,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -33,8 +34,8 @@ public class MainActivity extends AppCompatActivity {
     public static boolean _startedNodeAlready=false;
 
     /**Relative path to /src/main/assets/nodejs-project folder*/
-//    public static String MAIN_NODE_SCRIPT = "/epi-workspace/bin/MobileServerLauncher.js";
-    public static String MAIN_NODE_SCRIPT = "/main.js";
+    public static String MAIN_NODE_SCRIPT = "/epi-workspace/bin/MobileServerLauncher.js";
+//    public static String MAIN_NODE_SCRIPT = "/main.js";
 
     public static int NODE_PORT = 3000;
 
@@ -119,6 +120,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        final WebView myWebView = (WebView) findViewById(R.id.myWebView);
+
+        if ((keyCode == KeyEvent.KEYCODE_BACK) && myWebView.canGoBack()) {
+            myWebView.goBack();
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
     /**
