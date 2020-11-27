@@ -100,6 +100,10 @@ public class MainActivity extends AppCompatActivity {
 
         myWebView.setWebViewClient(new InnerWebViewClient());
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
+
         buttonVersions.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
