@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 import android.content.Context;
@@ -94,34 +95,38 @@ public class MainActivity extends AppCompatActivity {
         }
 
         final Button buttonVersions = (Button) findViewById(R.id.btVersions);
-        final TextView textViewVersions = (TextView) findViewById(R.id.tvVersions);
+//        final TextView textViewVersions = (TextView) findViewById(R.id.tvVersions);
+        final WebView myWebView = (WebView) findViewById(R.id.myWebView);
 
         buttonVersions.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                //Network operations should be done in the background.
-                new AsyncTask<Void,Void,String>() {
-                    @Override
-                    protected String doInBackground(Void... params) {
-                        String nodeResponse="";
-                        try {
-                            URL localNodeServer = new URL("http://localhost:" + NODE_PORT  + INDEX_PAGE);
-                            BufferedReader in = new BufferedReader(
-                                    new InputStreamReader(localNodeServer.openStream()));
-                            String inputLine;
-                            while ((inputLine = in.readLine()) != null)
-                                nodeResponse=nodeResponse+inputLine;
-                            in.close();
-                        } catch (Exception ex) {
-                            nodeResponse=ex.toString();
-                        }
-                        return nodeResponse;
-                    }
-                    @Override
-                    protected void onPostExecute(String result) {
-                        textViewVersions.setText(result);
-                    }
-                }.execute();
+//                URL localNodeServer = new URL("http://localhost:" + NODE_PORT  + INDEX_PAGE);
+                myWebView.loadUrl("http://localhost:" + NODE_PORT  + INDEX_PAGE);
+
+//                //Network operations should be done in the background.
+//                new AsyncTask<Void,Void,String>() {
+//                    @Override
+//                    protected String doInBackground(Void... params) {
+//                        String nodeResponse="";
+//                        try {
+//                            URL localNodeServer = new URL("http://localhost:" + NODE_PORT  + INDEX_PAGE);
+//                            BufferedReader in = new BufferedReader(
+//                                    new InputStreamReader(localNodeServer.openStream()));
+//                            String inputLine;
+//                            while ((inputLine = in.readLine()) != null)
+//                                nodeResponse=nodeResponse+inputLine;
+//                            in.close();
+//                        } catch (Exception ex) {
+//                            nodeResponse=ex.toString();
+//                        }
+//                        return nodeResponse;
+//                    }
+//                    @Override
+//                    protected void onPostExecute(String result) {
+//                        textViewVersions.setText(result);
+//                    }
+//                }.execute();
             }
         });
 
