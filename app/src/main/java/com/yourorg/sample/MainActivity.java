@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
@@ -32,8 +33,8 @@ public class MainActivity extends AppCompatActivity {
     public static boolean _startedNodeAlready=false;
 
     /**Relative path to /src/main/assets/nodejs-project folder*/
-    public static String MAIN_NODE_SCRIPT = "/epi-workspace/bin/MobileServerLauncher.js";
-//    public static String MAIN_NODE_SCRIPT = "/main.js";
+//    public static String MAIN_NODE_SCRIPT = "/epi-workspace/bin/MobileServerLauncher.js";
+    public static String MAIN_NODE_SCRIPT = "/main.js";
 
     public static int NODE_PORT = 3000;
 
@@ -95,10 +96,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         final Button buttonVersions = (Button) findViewById(R.id.btVersions);
-//        final TextView textViewVersions = (TextView) findViewById(R.id.tvVersions);
         final WebView myWebView = (WebView) findViewById(R.id.myWebView);
 
+        //Enable inner navigation for WebView
         myWebView.setWebViewClient(new InnerWebViewClient());
+
+        //Enable JavaScript for WebView
+        WebSettings webSettings = myWebView.getSettings();
+        myWebView.clearCache(true);
+        myWebView.clearHistory();
+        webSettings.setJavaScriptEnabled(true);
+        myWebView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             WebView.setWebContentsDebuggingEnabled(true);
@@ -106,34 +114,8 @@ public class MainActivity extends AppCompatActivity {
 
         buttonVersions.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-
-//                URL localNodeServer = new URL("http://localhost:" + NODE_PORT  + INDEX_PAGE);
-//                myWebView.loadUrl("http://localhost:" + NODE_PORT  + INDEX_PAGE);
-                myWebView.loadUrl("https://abctimetracking.com");
-
-//                //Network operations should be done in the background.
-//                new AsyncTask<Void,Void,String>() {
-//                    @Override
-//                    protected String doInBackground(Void... params) {
-//                        String nodeResponse="";
-//                        try {
-//                            URL localNodeServer = new URL("http://localhost:" + NODE_PORT  + INDEX_PAGE);
-//                            BufferedReader in = new BufferedReader(
-//                                    new InputStreamReader(localNodeServer.openStream()));
-//                            String inputLine;
-//                            while ((inputLine = in.readLine()) != null)
-//                                nodeResponse=nodeResponse+inputLine;
-//                            in.close();
-//                        } catch (Exception ex) {
-//                            nodeResponse=ex.toString();
-//                        }
-//                        return nodeResponse;
-//                    }
-//                    @Override
-//                    protected void onPostExecute(String result) {
-//                        textViewVersions.setText(result);
-//                    }
-//                }.execute();
+                myWebView.loadUrl("http://localhost:" + NODE_PORT  + INDEX_PAGE);
+//                myWebView.loadUrl("https://abctimetracking.com");
             }
         });
 
@@ -222,22 +204,14 @@ public class MainActivity extends AppCompatActivity {
 
             File destFile = new File(toPath);
             destFile.createNewFile();
-
-//            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-//                assetManager.
-//                File srcFile = new File( new URI("file:///android_asset/" + fromAssetPath));
-//                copy(srcFile, destFile);
-//            }
-//            else{
-                in = assetManager.open(fromAssetPath);
-                out = new FileOutputStream(toPath);
-                copyFile(in, out);
-                in.close();
-                in = null;
-                out.flush();
-                out.close();
-                out = null;
-//            }
+            in = assetManager.open(fromAssetPath);
+            out = new FileOutputStream(toPath);
+            copyFile(in, out);
+            in.close();
+            in = null;
+            out.flush();
+            out.close();
+            out = null;
             return true;
         } catch(Exception e) {
             e.printStackTrace();
