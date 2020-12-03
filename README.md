@@ -46,6 +46,47 @@ Note: Android 28
 
 Note: Set proper permissions for application: #App Info > Permissions > (3 dots) > All permissions
 
+## Build it from console
+
+
+### Make sure you can run gradle
+
+__Windows__
+Run gradle.bat in Command Prompt
+
+__Linux__
+Run gradlew in console.
+
+Tip: If gradlew is not running make it executable with
+
+```sh
+chmod +x gradlew
+```
+
+### See gradle available task
+```sh
+grade(w) tasks
+```
+
+### Build a debug APK
+```sh
+gradlew assembleDebug
+```
+
+This will create an .apk inside `app/build/output/apk/debug` folder.
+
+If beside building you want to run it
+```shell
+gradlew installDebug
+```
+This will install the application on the default (running) emulator but IT
+WILL NOT LAUNCH IT FOR YOU.
+
+
+### Build a release APK
+See this [link](https://developer.android.com/studio/build/building-cmdline#ReleaseMode)
+
+
 ## Troubleshooting
 
 You can debug the inner browser (WebView) by typing
