@@ -34,22 +34,27 @@ How to use SDK Manager
 
     Steps (clean Xubuntu 20):
     ========================
+    Warning: Build process will occupy around 5GB of space.
+
     o Java installed
         java --version
 
     o Android SDK installed
-        https://developer.android.com/studio#downloads (seek Command line tools only) aprox 83MB
+        https://developer.android.com/studio#downloads (seek Command line tools only) aprox. 83MB
 
         Expand it into
             ${android_sdk}/cmdline-tools/latest/
 
     o Install SDK parts
-        ${android_sdk}/cmdline-tools/latest/bin/sdkmanager --list
+        (optional) See what's installed
+            ${android_sdk}/cmdline-tools/latest/bin/sdkmanager --list
 
         Install NDK
             echo "Y" | ${android_sdk}/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
             or
             echo "Y" | ${android_sdk}/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.1.6352462"
+
+            Note: You need to install this by hand as Gradle does not automatically agree on licenses.
 
     o Build it
         git clone https://github.com/PrivateSky/android-edge-agent.git

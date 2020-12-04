@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
         myWebView.clearCache(true);
         myWebView.clearHistory();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
         myWebView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
