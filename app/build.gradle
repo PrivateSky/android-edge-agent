@@ -1,5 +1,81 @@
 apply plugin: 'com.android.application'
 
+//Not working yet - use it as a skeleton to install NDK
+task installNDK(type: Exec) {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    def sdkDir = properties.getProperty('sdk.dir')
+    def ndkDir = properties.getProperty('ndk.dir')
+    def projDir = project.rootProject.projectDir.toString()
+    def sdkBinDir = sdkDir + '/cmdline-tools/latest/bin'
+
+    println "Operating system is: " + System.getProperty('os.name').toLowerCase(Locale.ROOT)
+    println "Project dir is: ${projDir}"
+    println "SDK dir is: ${sdkBinDir}"
+
+//    workingDir sdkBinDir
+//    commandLine './sdkmanager'  '"ndk;21.3.6528147"'
+
+//    workingDir projDir
+//    commandLine './installNDK.sh'
+
+    /*
+    We need to pipe a 'yes' into installation command so we forward it shell
+    */
+
+
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('linux')) {
+        workingDir projDir
+        executable './installNDK.sh'
+        args(sdkBinDir, '"ndk;21.3.6528147"')
+    } else if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')){
+        println("Not implemented yet");
+    }
+
+
+//    workingDir sdkBinDir
+//    executable './sdkmanager'
+//    args('--install', 'ndk;21.1.6352462')
+
+
+
+
+//    workingDir projDir
+//    commandLine 'yes | ls'
+
+
+//    workingDir sdkBinDir
+//    executable 'ls'
+////    args('-l', '--author')
+//    args('-l')
+//    args('-l', '--author', '-a')
+
+
+
+//    commandLine 'installNDK.sh'
+
+    //on windows:
+    //commandLine 'cmd', '/c', 'stop.bat'
+
+    //on linux
+    //commandLine './stop.sh'
+
+//    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+//        commandLine 'cmd', '/c', 'mycommand'
+//    } else {
+//        commandLine 'sh', '-c', 'mycommand'
+//    }
+
+    //store the output instead of printing to the console:
+//    standardOutput = new ByteArrayOutputStream()
+
+    //extension method stopTomcat.output() can be used to obtain the output:
+//    ext.output = {
+//        return standardOutput.toString()
+//    }
+//    println "${android.plugin.getSdkFolder().getAbsolutePath()}"
+}
+
 android {
     compileSdkVersion 28
     buildToolsVersion "26.0.3"
@@ -16,6 +92,7 @@ android {
                 arguments "-DANDROID_STL=c++_shared"
             }
         }
+        ndkVersion '21.3.6528147'
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }

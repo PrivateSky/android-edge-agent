@@ -1,3 +1,8 @@
+Things to do:
+    o NDK installation task for Windows and Mac
+    o see if I can add the NDK install task into build.gradle
+
+
 Android Studio 4.1
 
 Install NDK
@@ -46,10 +51,14 @@ How to use SDK Manager
             ${android_sdk}/cmdline-tools/latest/
 
     o Install SDK parts
+
+        Install NDK through Gradle
+            ./gradlew -q installNDK
+
         (optional) See what's installed
             ${android_sdk}/cmdline-tools/latest/bin/sdkmanager --list
 
-        Install NDK
+        (optional)Install NDK
             echo "Y" | ${android_sdk}/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
             or
             echo "Y" | ${android_sdk}/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.1.6352462"
