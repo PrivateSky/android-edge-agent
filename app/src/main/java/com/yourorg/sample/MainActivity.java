@@ -33,11 +33,12 @@ public class MainActivity extends AppCompatActivity {
     //We just want one instance of node running in the background.
     public static boolean _startedNodeAlready=false;
 
+    public static int NODE_PORT = 3000;
+
     /**Relative path to /src/main/assets/nodejs-project folder*/
-    public static String MAIN_NODE_SCRIPT = "/epi-workspace/bin/MobileServerLauncher.js";
+    public static String MAIN_NODE_SCRIPT = "/server/MobileServerLauncher.js --port=" + NODE_PORT + " --rootFolder=" + "../app";
 //    public static String MAIN_NODE_SCRIPT = "/main.js";
 
-    public static int NODE_PORT = 3000;
 
     /**First page to call once the Node server is up and running*/
 //    public static String INDEX_PAGE = "/index.html";
