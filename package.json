@@ -1,0 +1,19 @@
+{
+  "name": "android-edge-agent",
+  "version": "1.0.0",
+  "description": "This is a template for any project that want to use OpenDSU inside an Android application.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PrivateSky/android-edge-agent.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/PrivateSky/android-edge-agent/issues"
+  },
+  "homepage": "https://github.com/PrivateSky/android-edge-agent#readme"
+}
