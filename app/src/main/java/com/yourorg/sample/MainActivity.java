@@ -1,6 +1,5 @@
 package com.yourorg.sample;
 
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
@@ -11,15 +10,15 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.TextView;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
-import java.net.*;
 import java.io.*;
 import java.nio.file.Files;
+import java.util.Arrays;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     public static String TAG = MainActivity.class.getCanonicalName();
@@ -35,22 +34,17 @@ public class MainActivity extends AppCompatActivity {
 
     public static int NODE_PORT = 3000;
 
-    /**Relative path to /src/main/assets/nodejs-project folder*/
-    public static String MAIN_NODE_SCRIPT = "/server/MobileServerLauncher.js --port=" + NODE_PORT + " --rootFolder=" + "../app";
-//    public static String MAIN_NODE_SCRIPT = "/main.js";
-
+    public static String MAIN_NODE_SCRIPT = "/MobileServerLauncher.js";
 
     /**First page to call once the Node server is up and running*/
-//    public static String INDEX_PAGE = "/index.html";
-    public static String INDEX_PAGE = "/";
-
+    public static String INDEX_PAGE = "/app/loader/index.html";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.i(TAG, "Running onCreate(...) :) ");
+        Log.i(TAG, "Running onCreate(...)");
 
         if( !_startedNodeAlready ) {
             _startedNodeAlready=true;
@@ -58,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     //The path where we expect the node project to be at runtime.
-                    String nodeDir=getApplicationContext().getFilesDir().getAbsolutePath()+"/nodejs-project";
+                    String nodeDir = getApplicationContext().getFilesDir().getAbsolutePath() + "/nodejs-project";
                     File nodeDirReference=new File(nodeDir);
 
                     if (wasAPKUpdated()) {
@@ -83,9 +77,30 @@ public class MainActivity extends AppCompatActivity {
 
                     if (nodeDirReference.exists()) {
                         Log.i(TAG, "Initiate startNodeWithArguments(...) call");
-                        Integer retVal = startNodeWithArguments(new String[]{"node",
-                                nodeDir + MAIN_NODE_SCRIPT
-                        });
+
+                        JSONObject env  = new JSONObject();
+                        try {
+                            env.put("PSK_CONFIG_LOCATION", "/data/data/com.yourorg.sample/files/nodejs-project/web-server/external-volume/config");
+                            env.put("PSK_ROOT_INSTALATION_FOLDER", "/data/data/com.yourorg.sample/files/nodejs-project/");
+                            env.put("BDNS_ROOT_HOSTS", "http://localhost:3000");
+                        } catch (Exception ex){
+                            Log.w(TAG, "Env JSON problem : " + ex.toString());
+                        }
+
+                        String[] args = new String[]{
+                                "node",
+                                nodeDir + MAIN_NODE_SCRIPT,
+                                "--port=" + NODE_PORT,
+                                        "--rootFolder=" + "/data/data/com.yourorg.sample/files/nodejs-project/web-server",
+                                        "--bundle=./pskWebServer.js",
+                                        "--env=" + env.toString()
+
+
+                        };
+                        Log.i(TAG, "Arguments to launch Node are : " + Arrays.toString(args));
+
+                        Integer retVal = startNodeWithArguments(args);
+
                         Log.i(TAG, "run: xxx Returned value : " + retVal);
                     }
                     else {
@@ -118,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
         buttonVersions.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 myWebView.loadUrl("http://localhost:" + NODE_PORT  + INDEX_PAGE);
-//                myWebView.loadUrl("https://abctimetracking.com");
             }
         });
 
@@ -189,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static boolean copyAssetFolder(AssetManager assetManager, String fromAssetPath, String toPath) {
-        Log.d(TAG, "copyAssetFolder(): Copy asset from " +  fromAssetPath + " to " + toPath);
+//        Log.d(TAG, "copyAssetFolder(): Copy asset from " +  fromAssetPath + " to " + toPath);
         try {
             String[] files = assetManager.list(fromAssetPath);
             boolean res = true;
@@ -202,9 +216,9 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 new File(toPath).mkdirs();
                 for (String file : files)
-                res &= copyAssetFolder(assetManager,
-                        fromAssetPath + "/" + file,
-                        toPath + "/" + file);
+                    res &= copyAssetFolder(assetManager,
+                            fromAssetPath + "/" + file,
+                            toPath + "/" + file);
             }
             return res;
         } catch (Exception e) {

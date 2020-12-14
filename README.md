@@ -65,19 +65,19 @@ chmod +x gradlew
 
 ### See gradle available task
 ```sh
-grade(w) tasks
+./gradle(w) tasks
 ```
 
 ### Build a debug APK
 ```sh
-gradlew assembleDebug
+./gradlew assembleDebug
 ```
 
 This will create an .apk inside `app/build/output/apk/debug` folder.
 
 If beside building you want to run it
 ```shell
-gradlew installDebug
+./gradlew installDebug
 ```
 This will install the application on the default (running) emulator but IT
 WILL NOT LAUNCH IT FOR YOU.
