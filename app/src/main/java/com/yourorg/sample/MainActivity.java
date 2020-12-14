@@ -1,7 +1,10 @@
 package com.yourorg.sample;
 
+import android.Manifest;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -45,6 +48,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (checkPermission()) {
+            //do we need to do something special???
+        } else {
+            requestPermission();
+        }
 
         Log.i(TAG, "Running onCreate(...)");
 
@@ -144,6 +153,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private boolean checkPermission() {
+        Log.i(TAG, "Checking for camera permission.");
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Camera permission not granted!");
+            return false;
+        }
+        return true;
+    }
+
+    private static final int PERMISSION_REQUEST_CODE = 200;
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.CAMERA},
+                PERMISSION_REQUEST_CODE);
     }
 
 
