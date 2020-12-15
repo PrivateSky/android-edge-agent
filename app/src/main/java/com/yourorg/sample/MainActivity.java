@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -78,8 +79,8 @@ public class MainActivity extends AppCompatActivity {
                             progressBar.setIndeterminate(true);
                         }
                         else{
+                            progressBar.setVisibility(View.GONE);
                             progressBar.setIndeterminate(false);
-                            progressBar.setVisibility(View.INVISIBLE);
                         }
                     }
                 }
@@ -115,6 +116,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //Remove title bar
+//        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         setContentView(R.layout.activity_main);
 
         cleanPidFile();
@@ -124,8 +129,8 @@ public class MainActivity extends AppCompatActivity {
 
 //        listPorts();
 
-        buttonVersions = (Button) findViewById(R.id.btVersions);
-        buttonVersions.setVisibility(View.GONE);
+//        buttonVersions = (Button) findViewById(R.id.btVersions);
+//        buttonVersions.setVisibility(View.GONE);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
@@ -285,11 +290,11 @@ public class MainActivity extends AppCompatActivity {
             WebView.setWebContentsDebuggingEnabled(true);
         }
 
-        buttonVersions.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                loadPage();
-            }
-        });
+//        buttonVersions.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                loadPage();
+//            }
+//        });
 
     }
 
