@@ -20,6 +20,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.widget.ProgressBar;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -44,10 +46,66 @@ public class MainActivity extends AppCompatActivity {
     /**First page to call once the Node server is up and running*/
     public static String INDEX_PAGE = "/app/loader/index.html";
 
+    public static String NODEJS_PATH = "/data/data/com.yourorg.sample/files/nodejs-project";
+    public static String WEBSERVER_PATH = NODEJS_PATH + "/web-server";
+
+    Button buttonVersions;
+    ProgressBar progressBar;
+
+    /**Keeps current process Id*/
+    int mProcessId;
+    WebView myWebView;
+
+    /**Monitors the APID written by Node upon booting*/
+    Thread pidMonitor;
+
+    /**Boots the whole Node + Application stack*/
+    Thread booter;
+
+    /**Lock object use to orchestrate the booter and monitor threads*/
+    Object lock = new Object();
+
+
+    /**Updates progress bar inside the main UI*/
+    void updateProgressBar(final boolean present){
+        runOnUiThread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        if(present){
+                            progressBar.setVisibility(View.VISIBLE);
+                            progressBar.setIndeterminate(true);
+                        }
+                        else{
+                            progressBar.setIndeterminate(false);
+                            progressBar.setVisibility(View.INVISIBLE);
+                        }
+                    }
+                }
+        );
+    }
+
+    void cleanPidFile(){
+        String apidFilePath = WEBSERVER_PATH + "/pid";
+        File apidFile = new File(apidFilePath);
+        if(apidFile.exists()){
+            if(!apidFile.delete()){
+                Log.i(TAG, "Could not delete pid file" );
+            }
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        cleanPidFile();
+
+        buttonVersions = (Button) findViewById(R.id.btVersions);
+        buttonVersions.setVisibility(View.GONE);
+
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         if (checkPermission()) {
             //do we need to do something special???
@@ -55,11 +113,62 @@ public class MainActivity extends AppCompatActivity {
             requestPermission();
         }
 
+        mProcessId = android.os.Process.myPid();
+
         Log.i(TAG, "Running onCreate(...)");
 
         if( !_startedNodeAlready ) {
             _startedNodeAlready=true;
-            new Thread(new Runnable() {
+
+            //Watch for APID update to know when to trigger page load
+            pidMonitor = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    //put it to sleep
+                    synchronized (lock) {
+                        try {
+                            lock.wait();
+                        } catch(InterruptedException e){
+                            e.printStackTrace();
+                        }
+                    }
+                    Log.i(TAG, "APID monitor awaken." );
+
+                    //try to
+
+                    while(true){
+                        try {
+                            Thread.sleep(1000);
+                            //Let's see what we got
+                            String apidFilePath = WEBSERVER_PATH + "/pid";
+                            File apidFile = new File(apidFilePath);
+                            if(apidFile.exists()){
+                                String data = getFileContent(apidFilePath);
+                                try{
+                                    int apid = Integer.parseInt(data.trim());
+                                    if(apid == mProcessId){
+                                        break;
+                                    }
+                                }catch (NumberFormatException nfex){
+                                    Log.w(TAG, "APID is not an integer: " + nfex.toString() );
+                                }
+                            }
+
+                            Log.d(TAG, "APID Monitor scan done.");
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    //We know it's ok so
+                    updateProgressBar(false);
+                    loadPage();
+                }
+            });
+            pidMonitor.start();
+
+
+            booter = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     //The path where we expect the node project to be at runtime.
@@ -79,9 +188,11 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "Deletion of folder took: " + (t2-t1) + " ms");
 
                         //Copy the node project from assets into the application's data path.
+                        updateProgressBar(true);
                         copyAssetFolder(getApplicationContext().getAssets(), "nodejs-project", nodeDir);
                         long t3 = System.currentTimeMillis();
                         Log.d(TAG, "Folder copy took: " + (t3-t2) + " ms");
+                        updateProgressBar(false);
 
                         saveLastUpdateTime();
                     }
@@ -91,8 +202,8 @@ public class MainActivity extends AppCompatActivity {
 
                         JSONObject env  = new JSONObject();
                         try {
-                            env.put("PSK_CONFIG_LOCATION", "/data/data/com.yourorg.sample/files/nodejs-project/web-server/external-volume/config");
-                            env.put("PSK_ROOT_INSTALATION_FOLDER", "/data/data/com.yourorg.sample/files/nodejs-project/");
+                            env.put("PSK_CONFIG_LOCATION", WEBSERVER_PATH + "/external-volume/config");
+                            env.put("PSK_ROOT_INSTALATION_FOLDER", NODEJS_PATH);
                             env.put("BDNS_ROOT_HOSTS", "http://localhost:3000");
                         } catch (Exception ex){
                             Log.w(TAG, "Env JSON problem : " + ex.toString());
@@ -102,13 +213,19 @@ public class MainActivity extends AppCompatActivity {
                                 "node",
                                 nodeDir + MAIN_NODE_SCRIPT,
                                 "--port=" + NODE_PORT,
-                                        "--rootFolder=" + "/data/data/com.yourorg.sample/files/nodejs-project/web-server",
-                                        "--bundle=./pskWebServer.js",
-                                        "--env=" + env.toString()
+                                "--rootFolder=" + WEBSERVER_PATH,
+                                "--bundle=./pskWebServer.js",
+                                "--apic=" + mProcessId, //Android's process Id
+                                "--env=" + env.toString()
 
 
                         };
                         Log.i(TAG, "Arguments to launch Node are : " + Arrays.toString(args));
+
+                        //Wake up APID monitor thread
+                        synchronized (lock) {
+                            lock.notify();
+                        }
 
                         Integer retVal = startNodeWithArguments(args);
 
@@ -117,14 +234,13 @@ public class MainActivity extends AppCompatActivity {
                     else {
                         Log.i(TAG, "Folder  " + nodeDirReference.getAbsolutePath() + " does not exists" );
                     }
-
-
                 }
-            }).start();
+            });
+            booter.start();
+
         }
 
-        final Button buttonVersions = (Button) findViewById(R.id.btVersions);
-        final WebView myWebView = (WebView) findViewById(R.id.myWebView);
+        myWebView = (WebView) findViewById(R.id.myWebView);
 
         //Enable inner navigation for WebView
         myWebView.setWebViewClient(new InnerWebViewClient());
@@ -149,10 +265,22 @@ public class MainActivity extends AppCompatActivity {
 
         buttonVersions.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                myWebView.loadUrl("http://localhost:" + NODE_PORT  + INDEX_PAGE);
+                loadPage();
             }
         });
 
+    }
+
+    /**Loads the page of the web app*/
+    void loadPage(){
+        runOnUiThread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        myWebView.loadUrl("http://localhost:" + NODE_PORT  + INDEX_PAGE);
+                    }
+                }
+        );
     }
 
     private boolean checkPermission() {
@@ -237,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static boolean copyAssetFolder(AssetManager assetManager, String fromAssetPath, String toPath) {
-//        Log.d(TAG, "copyAssetFolder(): Copy asset from " +  fromAssetPath + " to " + toPath);
+        Log.d(TAG, "copyAssetFolder(): Copy asset from " +  fromAssetPath + " to " + toPath);
         try {
             String[] files = assetManager.list(fromAssetPath);
             boolean res = true;
@@ -283,6 +411,27 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**Returns the content of a file as string*/
+    private String getFileContent(String toPath){
+        StringBuilder sb = new StringBuilder();
+
+        File file = new File(toPath);
+        if(file.exists() && file.canRead()){
+            try{
+                FileReader rf = new FileReader(file);
+                BufferedReader br = new BufferedReader(rf);
+                String line;
+                while( (line = br.readLine()) != null){
+                    sb.append(line);
+                }
+            } catch (IOException ioex){
+                ioex.printStackTrace();
+            }
+        }
+
+        return  sb.toString();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     public static void copy(File origin, File dest) throws IOException {
         Files.copy(origin.toPath(), dest.toPath());
@@ -295,5 +444,4 @@ public class MainActivity extends AppCompatActivity {
             out.write(buffer, 0, read);
         }
     }
-
 }
