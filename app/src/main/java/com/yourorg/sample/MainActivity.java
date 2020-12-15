@@ -23,6 +23,7 @@ import android.content.res.AssetManager;
 import android.widget.ProgressBar;
 
 import java.io.*;
+import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.util.Arrays;
 import org.json.JSONObject;
@@ -95,12 +96,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**Get a free port to runt the NodeJS*/
+    int getFreePort(){
+        int port = -1;
+        try {
+            ServerSocket socket = new ServerSocket(0);
+            // here's your free port
+            port = socket.getLocalPort();
+            socket.close();
+        }
+        catch (IOException ioe) {
+            Log.i(TAG, "Could not get a free port: " + ioe.getMessage());
+        }
+
+        return port;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         cleanPidFile();
+
+        NODE_PORT = getFreePort();
+        Log.i(TAG, "Free port is" + NODE_PORT);
+
+//        listPorts();
 
         buttonVersions = (Button) findViewById(R.id.btVersions);
         buttonVersions.setVisibility(View.GONE);
@@ -204,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             env.put("PSK_CONFIG_LOCATION", WEBSERVER_PATH + "/external-volume/config");
                             env.put("PSK_ROOT_INSTALATION_FOLDER", NODEJS_PATH);
-                            env.put("BDNS_ROOT_HOSTS", "http://localhost:3000");
+                            env.put("BDNS_ROOT_HOSTS", "http://localhost:" + NODE_PORT);
                         } catch (Exception ex){
                             Log.w(TAG, "Env JSON problem : " + ex.toString());
                         }
