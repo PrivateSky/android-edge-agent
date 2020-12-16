@@ -147,7 +147,8 @@ public class MainActivity extends AppCompatActivity {
     public void showWarning(){
         AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
         alertDialog.setTitle("Wrong Chrome version");
-        alertDialog.setMessage("Minimum Chrome version should be: " + MIN_CHROME);
+        alertDialog.setMessage("Minimum Chrome version should be: " + MIN_CHROME + ". Please update you " +
+                " Chrome version to the last possible one for your device and try again.");
         alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
