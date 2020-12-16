@@ -2,6 +2,8 @@ package com.yourorg.sample;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -46,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     public static boolean _startedNodeAlready=false;
 
     //Minimum version of Chrome supported
-    public static int MIN_CHROME = 69;
+    public static int MIN_CHROME = 99;
 
     public static int NODE_PORT = 3000;
 
@@ -154,6 +156,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
                         MainActivity.this.finish();
+
+                        //Sling user to Google Play's Chrome page
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=com.android.chrome")));
                     }
                 });
         alertDialog.show();
@@ -171,7 +176,6 @@ public class MainActivity extends AppCompatActivity {
 
         if(!isChromeVersionOK(MIN_CHROME)){
             showWarning();
-
         }
         else {
 
