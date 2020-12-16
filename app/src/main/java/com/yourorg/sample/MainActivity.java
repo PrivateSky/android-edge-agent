@@ -1,10 +1,12 @@
 package com.yourorg.sample;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,6 +29,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.regex.Pattern;
+
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
@@ -40,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
 
     //We just want one instance of node running in the background.
     public static boolean _startedNodeAlready=false;
+
+    //Minimum version of Chrome supported
+    public static int MIN_CHROME = 69;
 
     public static int NODE_PORT = 3000;
 
@@ -113,6 +120,45 @@ public class MainActivity extends AppCompatActivity {
         return port;
     }
 
+
+    private boolean isChromeVersionOK(int chromeVersion) {
+        return getChromeVersion() >= chromeVersion;
+    }
+
+    public int getChromeVersion(){
+        PackageInfo pInfo;
+        try {
+            pInfo = getPackageManager().getPackageInfo("com.android.chrome", 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            //chrome is not installed on the device
+            return -1;
+        }
+        if (pInfo != null) {
+            //Chrome has versions like 68.0.3440.91, we need to find the major version
+            //using the first dot we find in the string
+            int firstDotIndex = pInfo.versionName.indexOf(".");
+            //take only the number before the first dot excluding the dot itself
+            String majorVersion = pInfo.versionName.substring(0, firstDotIndex);
+            return Integer.parseInt(majorVersion);
+        }
+        return -1;
+    }
+
+    public void showWarning(){
+        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+        alertDialog.setTitle("Wrong Chrome version");
+        alertDialog.setMessage("Minimum Chrome version should be: " + MIN_CHROME);
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                        MainActivity.this.finish();
+                    }
+                });
+        alertDialog.show();
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,179 +168,185 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        cleanPidFile();
+        if(!isChromeVersionOK(MIN_CHROME)){
+            showWarning();
 
-        NODE_PORT = getFreePort();
-        Log.i(TAG, "Free port is" + NODE_PORT);
+        }
+        else {
+
+            cleanPidFile();
+
+            NODE_PORT = getFreePort();
+            Log.i(TAG, "Free port is" + NODE_PORT);
 
 //        listPorts();
 
 //        buttonVersions = (Button) findViewById(R.id.btVersions);
 //        buttonVersions.setVisibility(View.GONE);
 
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+            progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-        if (checkPermission()) {
-            //do we need to do something special???
-        } else {
-            requestPermission();
-        }
+            if (checkPermission()) {
+                //do we need to do something special???
+            } else {
+                requestPermission();
+            }
 
-        mProcessId = android.os.Process.myPid();
+            mProcessId = android.os.Process.myPid();
 
-        Log.i(TAG, "Running onCreate(...)");
+            Log.i(TAG, "Running onCreate(...)");
 
-        if( !_startedNodeAlready ) {
-            _startedNodeAlready=true;
+            if (!_startedNodeAlready) {
+                _startedNodeAlready = true;
 
-            //Watch for APID update to know when to trigger page load
-            pidMonitor = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    //put it to sleep
-                    synchronized (lock) {
-                        try {
-                            lock.wait();
-                        } catch(InterruptedException e){
-                            e.printStackTrace();
+                //Watch for APID update to know when to trigger page load
+                pidMonitor = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //put it to sleep
+                        synchronized (lock) {
+                            try {
+                                lock.wait();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                    Log.i(TAG, "APID monitor awaken." );
+                        Log.i(TAG, "APID monitor awaken.");
 
-                    //try to
+                        //try to
 
-                    while(true){
-                        try {
-                            Thread.sleep(1000);
-                            //Let's see what we got
-                            String apidFilePath = WEBSERVER_PATH + "/pid";
-                            File apidFile = new File(apidFilePath);
-                            if(apidFile.exists()){
-                                String data = getFileContent(apidFilePath);
-                                try{
-                                    int apid = Integer.parseInt(data.trim());
-                                    if(apid == mProcessId){
-                                        break;
+                        while (true) {
+                            try {
+                                Thread.sleep(1000);
+                                //Let's see what we got
+                                String apidFilePath = WEBSERVER_PATH + "/pid";
+                                File apidFile = new File(apidFilePath);
+                                if (apidFile.exists()) {
+                                    String data = getFileContent(apidFilePath);
+                                    try {
+                                        int apid = Integer.parseInt(data.trim());
+                                        if (apid == mProcessId) {
+                                            break;
+                                        }
+                                    } catch (NumberFormatException nfex) {
+                                        Log.w(TAG, "APID is not an integer: " + nfex.toString());
                                     }
-                                }catch (NumberFormatException nfex){
-                                    Log.w(TAG, "APID is not an integer: " + nfex.toString() );
                                 }
+
+                                Log.d(TAG, "APID Monitor scan done.");
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        //We know it's ok so
+                        updateProgressBar(false);
+                        loadPage();
+                    }
+                });
+                pidMonitor.start();
+
+
+                booter = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //The path where we expect the node project to be at runtime.
+                        String nodeDir = getApplicationContext().getFilesDir().getAbsolutePath() + "/nodejs-project";
+                        File nodeDirReference = new File(nodeDir);
+
+                        if (wasAPKUpdated()) {
+                            Log.d(TAG, "APK updated. Trigger re-installation of node asset folder");
+
+                            long t1 = System.currentTimeMillis();
+
+                            //Recursively delete any existing nodejs-project.
+                            if (nodeDirReference.exists()) {
+                                deleteFolderRecursively(new File(nodeDir));
+                            }
+                            long t2 = System.currentTimeMillis();
+                            Log.d(TAG, "Deletion of folder took: " + (t2 - t1) + " ms");
+
+                            //Copy the node project from assets into the application's data path.
+                            updateProgressBar(true);
+                            copyAssetFolder(getApplicationContext().getAssets(), "nodejs-project", nodeDir);
+                            long t3 = System.currentTimeMillis();
+                            Log.d(TAG, "Folder copy took: " + (t3 - t2) + " ms");
+                            updateProgressBar(false);
+
+                            saveLastUpdateTime();
+                        }
+
+                        if (nodeDirReference.exists()) {
+                            Log.i(TAG, "Initiate startNodeWithArguments(...) call");
+
+                            JSONObject env = new JSONObject();
+                            try {
+                                env.put("PSK_CONFIG_LOCATION", WEBSERVER_PATH + "/external-volume/config");
+                                env.put("PSK_ROOT_INSTALATION_FOLDER", NODEJS_PATH);
+                                env.put("BDNS_ROOT_HOSTS", "http://localhost:" + NODE_PORT);
+                            } catch (Exception ex) {
+                                Log.w(TAG, "Env JSON problem : " + ex.toString());
                             }
 
-                            Log.d(TAG, "APID Monitor scan done.");
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            String[] args = new String[]{
+                                    "node",
+                                    nodeDir + MAIN_NODE_SCRIPT,
+                                    "--port=" + NODE_PORT,
+                                    "--rootFolder=" + WEBSERVER_PATH,
+                                    "--bundle=./pskWebServer.js",
+                                    "--apic=" + mProcessId, //Android's process Id
+                                    "--env=" + env.toString()
+
+
+                            };
+                            Log.i(TAG, "Arguments to launch Node are : " + Arrays.toString(args));
+
+                            //Wake up APID monitor thread
+                            synchronized (lock) {
+                                lock.notify();
+                            }
+
+                            Integer retVal = startNodeWithArguments(args);
+
+                            Log.i(TAG, "run: xxx Returned value : " + retVal);
+                        } else {
+                            Log.i(TAG, "Folder  " + nodeDirReference.getAbsolutePath() + " does not exists");
                         }
                     }
+                });
+                booter.start();
 
-                    //We know it's ok so
-                    updateProgressBar(false);
-                    loadPage();
-                }
-            });
-            pidMonitor.start();
-
-
-            booter = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    //The path where we expect the node project to be at runtime.
-                    String nodeDir = getApplicationContext().getFilesDir().getAbsolutePath() + "/nodejs-project";
-                    File nodeDirReference=new File(nodeDir);
-
-                    if (wasAPKUpdated()) {
-                        Log.d(TAG, "APK updated. Trigger re-installation of node asset folder");
-
-                        long t1 = System.currentTimeMillis();
-
-                        //Recursively delete any existing nodejs-project.
-                        if (nodeDirReference.exists()) {
-                            deleteFolderRecursively(new File(nodeDir));
-                        }
-                        long t2 = System.currentTimeMillis();
-                        Log.d(TAG, "Deletion of folder took: " + (t2-t1) + " ms");
-
-                        //Copy the node project from assets into the application's data path.
-                        updateProgressBar(true);
-                        copyAssetFolder(getApplicationContext().getAssets(), "nodejs-project", nodeDir);
-                        long t3 = System.currentTimeMillis();
-                        Log.d(TAG, "Folder copy took: " + (t3-t2) + " ms");
-                        updateProgressBar(false);
-
-                        saveLastUpdateTime();
-                    }
-
-                    if (nodeDirReference.exists()) {
-                        Log.i(TAG, "Initiate startNodeWithArguments(...) call");
-
-                        JSONObject env  = new JSONObject();
-                        try {
-                            env.put("PSK_CONFIG_LOCATION", WEBSERVER_PATH + "/external-volume/config");
-                            env.put("PSK_ROOT_INSTALATION_FOLDER", NODEJS_PATH);
-                            env.put("BDNS_ROOT_HOSTS", "http://localhost:" + NODE_PORT);
-                        } catch (Exception ex){
-                            Log.w(TAG, "Env JSON problem : " + ex.toString());
-                        }
-
-                        String[] args = new String[]{
-                                "node",
-                                nodeDir + MAIN_NODE_SCRIPT,
-                                "--port=" + NODE_PORT,
-                                "--rootFolder=" + WEBSERVER_PATH,
-                                "--bundle=./pskWebServer.js",
-                                "--apic=" + mProcessId, //Android's process Id
-                                "--env=" + env.toString()
-
-
-                        };
-                        Log.i(TAG, "Arguments to launch Node are : " + Arrays.toString(args));
-
-                        //Wake up APID monitor thread
-                        synchronized (lock) {
-                            lock.notify();
-                        }
-
-                        Integer retVal = startNodeWithArguments(args);
-
-                        Log.i(TAG, "run: xxx Returned value : " + retVal);
-                    }
-                    else {
-                        Log.i(TAG, "Folder  " + nodeDirReference.getAbsolutePath() + " does not exists" );
-                    }
-                }
-            });
-            booter.start();
-
-        }
-
-        myWebView = (WebView) findViewById(R.id.myWebView);
-
-        //Enable inner navigation for WebView
-        myWebView.setWebViewClient(new InnerWebViewClient());
-
-        //Enable JavaScript for WebView
-        WebSettings webSettings = myWebView.getSettings();
-        myWebView.clearCache(true);
-        myWebView.clearHistory();
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-        myWebView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-        myWebView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onPermissionRequest(final PermissionRequest request) {
-                request.grant(request.getResources());
             }
-        });
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            WebView.setWebContentsDebuggingEnabled(true);
-        }
+            myWebView = (WebView) findViewById(R.id.myWebView);
+
+            //Enable inner navigation for WebView
+            myWebView.setWebViewClient(new InnerWebViewClient());
+
+            //Enable JavaScript for WebView
+            WebSettings webSettings = myWebView.getSettings();
+            myWebView.clearCache(true);
+            myWebView.clearHistory();
+            webSettings.setJavaScriptEnabled(true);
+            webSettings.setDomStorageEnabled(true);
+            myWebView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+            myWebView.setWebChromeClient(new WebChromeClient() {
+                @Override
+                public void onPermissionRequest(final PermissionRequest request) {
+                    request.grant(request.getResources());
+                }
+            });
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                WebView.setWebContentsDebuggingEnabled(true);
+            }
 
 //        buttonVersions.setOnClickListener(new View.OnClickListener() {
 //            public void onClick(View v) {
 //                loadPage();
 //            }
 //        });
+        }
 
     }
 
