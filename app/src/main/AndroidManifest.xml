@@ -14,6 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar"
         android:usesCleartextTraffic="true"
+        android:extractNativeLibs="true"
         >
         <activity android:name=".MainActivity">
             <intent-filter>
