@@ -15,6 +15,7 @@
         android:theme="@style/Theme.AppCompat.NoActionBar"
         android:usesCleartextTraffic="true"
         android:extractNativeLibs="true"
+        android:testOnly="false"
         >
         <activity android:name="eu.pharmaledger.epi.MainActivity">
             <intent-filter>

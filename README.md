@@ -71,8 +71,38 @@ Note: Set proper permissions for application: #App Info > Permissions > (3 dots)
 
 ## C. Build it from console
 
+### 1. Setup Android SDK
 
-### Make sure you can run gradle
+### i. Create Android SDK folder
+
+Create a folder named android (we will use _${android_sdk}_ to refer to it) and subfolders.
+```sh
+    mkdir -p ~/${android_sdk}/Sdk/cmdline-tools/latest/
+```
+
+#### i. Download SDK
+
+This is based on the Android SDK, so you need to download it 
+
+Go to https://developer.android.com/studio#downloads and search for "SDK tools package" inside "Command line tools only" section.
+
+#### ii. Unzip it into
+Unzip the content of zip file into
+```
+${android_sdk}/cmdline-tools/latest/
+```
+
+Make sure you can run __sdkmanager__ from
+
+```
+${android_sdk}/cmdline-tools/latest/bin/
+```
+
+folder.
+
+
+
+### 2. Make sure you can run gradle
 
 __Windows__
 Run gradle.bat in Command Prompt
