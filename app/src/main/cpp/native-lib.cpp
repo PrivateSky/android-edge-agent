@@ -64,7 +64,7 @@ int start_redirecting_stdout_stderr() {
 
 //node's libUV requires all arguments being on contiguous memory.
 extern "C" jint JNICALL
-Java_com_yourorg_sample_MainActivity_startNodeWithArguments(
+Java_eu_pharmaledger_epi_MainActivity_startNodeWithArguments(
         JNIEnv *env,
         jobject /* this */,
         jobjectArray arguments) {

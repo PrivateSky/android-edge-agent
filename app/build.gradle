@@ -80,7 +80,7 @@ android {
     compileSdkVersion 28
     buildToolsVersion "26.0.3"
     defaultConfig {
-        applicationId "com.yourorg.sample"
+        applicationId "eu.pharmaledger.epi"
         minSdkVersion 28
         targetSdkVersion 28
         versionCode 1

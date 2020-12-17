@@ -1,4 +1,4 @@
-package com.yourorg.sample;
+package eu.pharmaledger.epi;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.Window;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -27,11 +26,11 @@ import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.widget.ProgressBar;
 
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.regex.Pattern;
 
 import org.json.JSONObject;
 
@@ -48,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     public static boolean _startedNodeAlready=false;
 
     //Minimum version of Chrome supported
-    public static int MIN_CHROME = 99;
+    public static int MIN_CHROME = 69;
 
     public static int NODE_PORT = 3000;
 
@@ -57,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     /**First page to call once the Node server is up and running*/
     public static String INDEX_PAGE = "/app/loader/index.html";
 
-    public static String NODEJS_PATH = "/data/data/com.yourorg.sample/files/nodejs-project";
+    public static String NODEJS_PATH = "/data/data/eu.pharmaledger.epi/files/nodejs-project";
     public static String WEBSERVER_PATH = NODEJS_PATH + "/web-server";
 
     Button buttonVersions;
