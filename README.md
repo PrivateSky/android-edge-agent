@@ -1,31 +1,54 @@
+
 # Android Edge Agent
 
-This is a template for any project that want to use OpenDSU inside an Android application.
+## A. Introduction
+Android Edge Agent is an Android application to run EPI client.
 
 This project is a heavily modified version of Android's native-gradle-node-folder project
 from [nodejs-mobile-samples/](https://github.com/janeasystems/nodejs-mobile-samples/).
 
 It uses Node 12.19 as Node platform.
 
-## How to make it run
-
 This will basically install Node inside the Android application and
-make it run on port 3000 for the application to connect to.
+make it run on a free port for the application to connect to.
 
-### Step 1 - Install Android Studio 4.1
+## B. Build it with Android Studio
+
+### Step 1 - Have Java Development Kit installed
+
+You must have JDK 11 installed. (Probably other versions of JDK - down to 8 - might work as we do not use specific JDK 11 features
+but we built it and test it using verison 11)
+
+To see if you have java installed and what version run
+```
+java --version
+```
+
+You should get something like:
+
+![alt text](./java-version-info.png "Webview Debugging")
+
+
+If you do not have JDK installed then follow this link - [How to install JDK](https://docs.oracle.com/en/java/javase/11/install/index.html) - to see how to install it on your machine.
+
+
+### Step 2 - Install Android Studio 4.1
 
 Download version 4.1 from [Download Android Studio](https://developer.android.com/studio) page
 
-### Step 2 - Install proper dependencies
+__Note__: Please try to to stick with 4.1 of the Studio as any new version (slight increase in version number) might convert and upgrade the project file(s) which might trigger a chain reaction of upgrades that might put whole project into a configration that was not tested yet.
+
+### Step 3 - Install proper dependencies
 
 #### Install NDK
-    SDK Manager > SDK Tools > Show Package Details > NDK (Side by side) > 21.3.6528147
+    Menu > Tools > SDK Manager > SDK Tools > Show Package Details > NDK (Side by side) > 21.3.6528147
 
-### Step 3 - Create/open project
+### Step 4 - Create/open project
 
 
-### Step 4 - Add the Nodejs project
+### Step 5 - (Optional) Add the Nodejs project
 
+__Note__: SKIP THIS STEP if you are using this repository from inside the [epi-workspace](https://github.com/PharmaLedger-IMI/epi-workspace)
 #### a. Copy project's files
 
 Copy project inside app/src/main/assets/**nodejs-project**/ folder
@@ -38,15 +61,15 @@ cd  app/src/main/assets/nodejs-project/
 npm install
 ```
 
-### Step 5 - Create proper Android emulator
+### Step 6 - Create proper Android emulator
+    Menu > Tools > AVD Manager > + Create Virtual Device... > Phone > Pixel 4 > (Next) >  Release Name (Pie) / API Level 28 > Next > AVD Name: Pixel 4 API 30 > (Finish)
 
-Note: Android 28
 
-### Step 6 - Run the project
+### Step 7 - Run the project
 
 Note: Set proper permissions for application: #App Info > Permissions > (3 dots) > All permissions
 
-## Build it from console
+## C. Build it from console
 
 
 ### Make sure you can run gradle
@@ -87,7 +110,7 @@ WILL NOT LAUNCH IT FOR YOU.
 See this [link](https://developer.android.com/studio/build/building-cmdline#ReleaseMode)
 
 
-## Troubleshooting
+## D. Troubleshooting
 
 You can debug the inner browser (WebView) by typing
 
