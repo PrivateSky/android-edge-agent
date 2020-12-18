@@ -1,0 +1,7 @@
+o Add icon for application
+o Automate installation on NDK
+o Steps to build it from epi-workspace
+    npm install
+    npm run install-mobile
+    npm run server
+    npm run build-mobile
