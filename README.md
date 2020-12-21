@@ -12,6 +12,8 @@ It uses Node 12.19 as Node platform.
 This will basically install Node inside the Android application and
 make it run on a free port for the application to connect to.
 
+**Warning**: Please be sure that you have at least 7GB free space on the device you want to make a build.
+
 ## B. Build it with Android Studio
 
 ### Step 1 - Have Java Development Kit installed
@@ -110,8 +112,12 @@ sdk.dir=~/${android__home}/sdk
 
 replacing the right value with your path to SDK
 
+### 2.Install NDK
+```
+yes | ~/${android__home}/sdk/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
+```
 
-### 2. Make sure you can run gradle
+### 3. Make sure you can run gradle
 
 __Windows__
 Run gradle.bat in Command Prompt
@@ -128,11 +134,6 @@ chmod +x gradlew
 ### See gradle available task
 ```sh
 ./gradle(w) tasks
-```
-
-### Install NDK
-```
-yes | ~/${android__home}/sdk/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
 ```
 
 ### Build a debug APK
