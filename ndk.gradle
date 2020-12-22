@@ -1,0 +1,59 @@
+
+//Install NDK
+task installNDK(type: Exec) {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    def sdkDir = properties.getProperty('sdk.dir')
+    def ndkDir = properties.getProperty('ndk.dir')
+    def projDir = project.rootProject.projectDir.toString()
+    def sdkBinDir = sdkDir + '/cmdline-tools/latest/bin'
+    def sdkManagerPath = sdkBinDir + '/sdkmanager'
+
+    File sdkManagerFile = new File(sdkManagerPath)
+    if(!sdkManagerFile.canExecute()){
+        println "File : ${sdkManagerFile} is not executable"
+        return false;
+    }
+
+    println "Operating system is: " + System.getProperty('os.name').toLowerCase(Locale.ROOT)
+    println "Project dir is: ${projDir}"
+    println "SDK dir is: ${sdkBinDir}"
+    println "Manager location is: ${sdkManagerPath}"
+
+//    workingDir projDir
+    standardInput = new ByteArrayInputStream("yes\n".getBytes())
+//    standardOutput = new FileOutputStream('ndk.log')
+
+//    workingDir sdkBinDir
+    commandLine sdkManagerPath, '--install', "ndk;21.3.6528147"
+}
+
+
+//Uninstall NDK
+task uninstallNDK(type: Exec) {
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    def sdkDir = properties.getProperty('sdk.dir')
+    def ndkDir = properties.getProperty('ndk.dir')
+    def projDir = project.rootProject.projectDir.toString()
+    def sdkBinDir = sdkDir + '/cmdline-tools/latest/bin'
+    def sdkManagerPath = sdkBinDir + '/sdkmanager'
+
+    File sdkManagerFile = new File(sdkManagerPath)
+    if(!sdkManagerFile.canExecute()){
+        println "File : ${sdkManagerFile} is not executable"
+        return false;
+    }
+
+    println "Operating system is: " + System.getProperty('os.name').toLowerCase(Locale.ROOT)
+    println "Project dir is: ${projDir}"
+    println "SDK dir is: ${sdkBinDir}"
+    println "Manager location is: ${sdkManagerPath}"
+
+//    workingDir projDir
+    standardInput = new ByteArrayInputStream("yes\n".getBytes())
+//    standardOutput = new FileOutputStream('ndk.log')
+
+//    workingDir sdkBinDir
+    commandLine sdkManagerPath, '--uninstall', "ndk;21.3.6528147"
+}

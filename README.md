@@ -57,7 +57,6 @@ Copy project inside app/src/main/assets/**nodejs-project**/ folder
 
 
 #### b. Bring in all project dependencies
-```sh
 cd  app/src/main/assets/nodejs-project/
 
 npm install
@@ -112,12 +111,8 @@ sdk.dir=~/${android__home}/sdk
 
 replacing the right value with your path to SDK
 
-### 2.Install NDK
-```
-yes | ~/${android__home}/sdk/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
-```
 
-### 3. Make sure you can run gradle
+### 2. Make sure you can run gradle
 
 __Windows__
 Run gradle.bat in Command Prompt
@@ -136,16 +131,25 @@ chmod +x gradlew
 ./gradle(w) tasks
 ```
 
-### Build a debug APK
+
+### 3.Install NDK
+
+Inside project's folder type:
+```sh
+./gradlew -b ndk.gradle installNDK
+```
+
+
+### 4. Build a debug APK
 ```sh
 ./gradlew assembleDebug
 ```
 
-This will create an .apk inside `app/build/output/apk/debug` folder.
+This will create an .apk file inside `app/build/output/apk/debug` folder.
 
-### Install it
+### 5. Install it
 
-If beside building you want to run it
+If beside building you want to run it on a device
 ```shell
 ./gradlew installDebug
 ```
@@ -153,7 +157,7 @@ This will install the application on the default (running) emulator but IT
 WILL NOT LAUNCH IT FOR YOU.
 
 
-### Build a release APK
+### 6. Build a release APK
 See this [link](https://developer.android.com/studio/build/building-cmdline#ReleaseMode)
 
 
