@@ -1,6 +1,14 @@
 
 //Install NDK
 task installNDK(type: Exec) {
+
+    def profFilePath  = 'local.properties';
+    File propFile = new File(profFilePath)
+    if(!propFile.exists()){
+        println "File : ${profFilePath} does not exist!"
+        return false;
+    }
+
     Properties properties = new Properties()
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
     def sdkDir = properties.getProperty('sdk.dir')
@@ -31,6 +39,13 @@ task installNDK(type: Exec) {
 
 //Uninstall NDK
 task uninstallNDK(type: Exec) {
+    def profFilePath  = 'local.properties';
+    File propFile = new File(profFilePath)
+    if(!propFile.exists()){
+        println "File : ${profFilePath} does not exist!"
+        return false;
+    }
+    
     Properties properties = new Properties()
     properties.load(project.rootProject.file('local.properties').newDataInputStream())
     def sdkDir = properties.getProperty('sdk.dir')
