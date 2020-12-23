@@ -51,12 +51,14 @@ __Note__: Please try to to stick with 4.1 of the Studio as any new version (slig
 ### Step 5 - (Optional) Add the Nodejs project
 
 __Note__: SKIP THIS STEP if you are using this repository from inside the [epi-workspace](https://github.com/PharmaLedger-IMI/epi-workspace)
+
 #### a. Copy project's files
 
 Copy project inside app/src/main/assets/**nodejs-project**/ folder
 
 
 #### b. Bring in all project dependencies
+```sh
 cd  app/src/main/assets/nodejs-project/
 
 npm install
@@ -69,6 +71,8 @@ npm install
 ### Step 7 - Run the project
 
 Note: Set proper permissions for application: #App Info > Permissions > (3 dots) > All permissions
+
+
 
 ## C. Build it from console
 
@@ -140,9 +144,17 @@ Inside project's folder type:
 ```
 
 
-### 4. Build a debug APK
+### 4. Build an APK
+
+For debug version run
+
 ```sh
 ./gradlew assembleDebug
+```
+
+For release version run
+```sh
+./gradlew assembleRelease
 ```
 
 This will create an .apk file inside `app/build/output/apk/debug` folder.
