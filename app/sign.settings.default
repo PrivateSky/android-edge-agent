@@ -1,0 +1,4 @@
+storeFile=epi.jks
+storePassword=123456
+keyAlias=epikey
+keyPassword=123456

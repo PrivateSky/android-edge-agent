@@ -161,6 +161,22 @@ WILL NOT LAUNCH IT FOR YOU.
 See this [link](https://developer.android.com/studio/build/building-cmdline#ReleaseMode)
 
 
+### 7. Signing an APK
+By default the release version of the APK is signed.
+
+To make a release APK run
+```sh
+./gradlew assembleRelease
+```
+
+By default a keystore file (_app/epi.jks_) is used and a default credentials properties file (_app/sign.settings_). They are created by default.
+
+To change the password keystore and access credentials to it you 
+have to update those files.
+
+
+
+
 ## D. Troubleshooting
 
 You can debug the inner browser (WebView) by typing
