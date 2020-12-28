@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     public static String INDEX_PAGE = "/app/loader/index.html";
 
     public static String NODEJS_PATH = "/data/data/eu.pharmaledger.epi/files/nodejs-project";
-    public static String WEBSERVER_PATH = NODEJS_PATH + "/web-server";
+    public static String WEBSERVER_PATH = NODEJS_PATH + "/apihub-root";
 
     Button buttonVersions;
     ProgressBar progressBar;
