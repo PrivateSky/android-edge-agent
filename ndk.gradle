@@ -1,74 +1,113 @@
 
 //Install NDK
 task installNDK(type: Exec) {
-
+	def os = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+	println "Operating system is: " + os
+	
     def profFilePath  = 'local.properties';
-    File propFile = new File(profFilePath)
+    File propFile = project.rootProject.file(profFilePath)
+	print "\nProperties file: [" + propFile + "]"
     if(!propFile.exists()){
-        println "File : ${profFilePath} does not exist!"
+        println "\nFile : ${profFilePath} does not exist!"
         return false;
     }
 
     Properties properties = new Properties()
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    properties.load(propFile.newDataInputStream())
+	print "\nProperties: " + properties
     def sdkDir = properties.getProperty('sdk.dir')
+	println "\nSDK dir : ${sdkDir}"
+	
     def ndkDir = properties.getProperty('ndk.dir')
     def projDir = project.rootProject.projectDir.toString()
     def sdkBinDir = sdkDir + '/cmdline-tools/latest/bin'
-    def sdkManagerPath = sdkBinDir + '/sdkmanager'
-
-    File sdkManagerFile = new File(sdkManagerPath)
-    if(!sdkManagerFile.canExecute()){
-        println "File : ${sdkManagerFile} is not executable"
-        return false;
-    }
 
     println "Operating system is: " + System.getProperty('os.name').toLowerCase(Locale.ROOT)
     println "Project dir is: ${projDir}"
     println "SDK dir is: ${sdkBinDir}"
-    println "Manager location is: ${sdkManagerPath}"
 
-//    workingDir projDir
-    standardInput = new ByteArrayInputStream("yes\n".getBytes())
-//    standardOutput = new FileOutputStream('ndk.log')
+    if (os.contains('windows')) {
+        def sdkExecutable = 'sdkmanager.bat'
+        def sdkManagerPath = sdkBinDir + '/' + sdkExecutable
 
-//    workingDir sdkBinDir
-    commandLine sdkManagerPath, '--install', "ndk;21.3.6528147"
+        println "Manager location is: ${sdkManagerPath}"
+
+        standardInput = new ByteArrayInputStream("yes\n".getBytes())
+
+        //workingDir sdkBinDir
+        commandLine sdkManagerPath, '--install', "ndk;21.3.6528147"
+    }
+    else{
+        def sdkExecutable = 'sdkmanager'
+        def sdkManagerPath = sdkBinDir + '/' + sdkExecutable
+
+        File sdkManagerFile = new File(sdkManagerPath)
+        if(!sdkManagerFile.canExecute()){
+            println "File : ${sdkManagerFile} is not executable"
+            return false;
+        }
+
+        println "Manager location is: ${sdkManagerPath}"
+
+        standardInput = new ByteArrayInputStream("yes\n".getBytes())
+
+        commandLine sdkManagerPath, '--install', "ndk;21.3.6528147"
+    }    
 }
 
 
 //Uninstall NDK
 task uninstallNDK(type: Exec) {
+    def os = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+    println "Operating system is: " + os
+
     def profFilePath  = 'local.properties';
-    File propFile = new File(profFilePath)
+    File propFile = project.rootProject.file(profFilePath)
+    print "\nProperties file: [" + propFile + "]"
     if(!propFile.exists()){
-        println "File : ${profFilePath} does not exist!"
+        println "\nFile : ${profFilePath} does not exist!"
         return false;
     }
-    
+
     Properties properties = new Properties()
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    properties.load(propFile.newDataInputStream())
+    print "\nProperties: " + properties
     def sdkDir = properties.getProperty('sdk.dir')
+    println "\nSDK dir : ${sdkDir}"
+
     def ndkDir = properties.getProperty('ndk.dir')
     def projDir = project.rootProject.projectDir.toString()
     def sdkBinDir = sdkDir + '/cmdline-tools/latest/bin'
-    def sdkManagerPath = sdkBinDir + '/sdkmanager'
-
-    File sdkManagerFile = new File(sdkManagerPath)
-    if(!sdkManagerFile.canExecute()){
-        println "File : ${sdkManagerFile} is not executable"
-        return false;
-    }
 
     println "Operating system is: " + System.getProperty('os.name').toLowerCase(Locale.ROOT)
     println "Project dir is: ${projDir}"
     println "SDK dir is: ${sdkBinDir}"
-    println "Manager location is: ${sdkManagerPath}"
 
-//    workingDir projDir
-    standardInput = new ByteArrayInputStream("yes\n".getBytes())
-//    standardOutput = new FileOutputStream('ndk.log')
+    if (os.contains('windows')) {
+        def sdkExecutable = 'sdkmanager.bat'
+        def sdkManagerPath = sdkBinDir + '/' + sdkExecutable
 
-//    workingDir sdkBinDir
-    commandLine sdkManagerPath, '--uninstall', "ndk;21.3.6528147"
+        println "Manager location is: ${sdkManagerPath}"
+
+        standardInput = new ByteArrayInputStream("yes\n".getBytes())
+
+        //workingDir sdkBinDir
+        commandLine sdkManagerPath, '--install', "ndk;21.3.6528147"
+    }
+    else{
+        def sdkExecutable = 'sdkmanager'
+        def sdkManagerPath = sdkBinDir + '/' + sdkExecutable
+
+        File sdkManagerFile = new File(sdkManagerPath)
+        if(!sdkManagerFile.canExecute()){
+            println "File : ${sdkManagerFile} is not executable"
+            return false;
+        }
+
+        println "Manager location is: ${sdkManagerPath}"
+
+        standardInput = new ByteArrayInputStream("yes\n".getBytes())
+
+        commandLine sdkManagerPath, '--uninstall', "ndk;21.3.6528147"
+    }
 }

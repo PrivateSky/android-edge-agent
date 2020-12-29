@@ -4,20 +4,21 @@ apply plugin: 'com.android.application'
 
 task checkSigningFiles(){
     def jksDefaultFilePath = "app/epi.jks.default"
-    def jksDefaultFile = new File(jksDefaultFilePath)
+    def jksDefaultFile = project.rootProject.file(jksDefaultFilePath)
+    println("Default jksFile path : " + jksDefaultFile.getAbsolutePath())
 
     def jksFilePath = "app/epi.jks"
-    def jksFile = new File(jksFilePath)
+    def jksFile = project.rootProject.file(jksFilePath)
     if(!jksFile.exists()){
-        println "No signing keystore file found. Creating a default one at : ${jksFilePath}"
+        println "No signing keystore file found. Creating a default one at : ${jksFilePath} from ${jksDefaultFile}"
         Files.copy(jksDefaultFile.toPath(), jksFile.toPath())
 
         def signDefaultSettingsFilePath = "app/sign.settings.default"
-        def signDefaultSettingsFile = new File(signDefaultSettingsFilePath)
+        def signDefaultSettingsFile = project.rootProject.file(signDefaultSettingsFilePath)
         def signSettingsFilePath = "app/sign.settings"
-        def signSettingsFile = new File(signSettingsFilePath)
+        def signSettingsFile = project.rootProject.file(signSettingsFilePath)
         if(!signSettingsFile.exists()){
-            println "No signing setting file found. Creating a default one at : ${signSettingsFilePath}"
+            println "No signing setting file found. Creating a default one at : " + signSettingsFile.getAbsolutePath()
             Files.copy(signDefaultSettingsFile.toPath(), signSettingsFile.toPath())
         }
     }
@@ -51,8 +52,10 @@ android {
             checkSigningFiles
 
             def signSettingsFilePath = "app/sign.settings"
+            def signSettingsFile = project.rootProject.file(signSettingsFilePath)
+            println "Sign settings file located at: " + signSettingsFile.getAbsolutePath()
             Properties properties = new Properties()
-            properties.load(project.rootProject.file(signSettingsFilePath).newDataInputStream())
+            properties.load(project.rootProject.file(signSettingsFile.getAbsolutePath()).newDataInputStream())
             def storeFileValue = properties.getProperty('storeFile')
             def storePasswordValue = properties.getProperty('storePassword')
             def storeKeyAlias = properties.getProperty('keyAlias')
