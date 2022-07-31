@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">EPI</string>
+    <string name="safety_net_api_key">GOOGLE_KEY</string>
 </resources>

@@ -1,15 +1,15 @@
 package eu.pharmaledger.epi;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -30,9 +30,12 @@ import android.widget.ProgressBar;
 import java.io.*;
 import java.net.ServerSocket;
 import java.nio.file.Files;
+import java.text.MessageFormat;
 import java.util.Arrays;
 
 import org.json.JSONObject;
+
+import eu.pharmaledger.epi.jailbreak.JailbreakDetection;
 
 public class MainActivity extends AppCompatActivity {
     public static String TAG = MainActivity.class.getCanonicalName();
@@ -281,6 +284,14 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         if (nodeDirReference.exists()) {
+                            String jailbreakDetectedFilePath = WEBSERVER_PATH + "/external-volume/jailbreak/jailbreak-detected";
+                            File jailbreakDetectedFile = new File(jailbreakDetectedFilePath);
+                            if(!jailbreakDetectedFile.exists()) {
+                                Log.i(TAG, MessageFormat.format("{0} doesn't exist. Checking for jailbreak...", jailbreakDetectedFilePath));
+                                JailbreakDetection jailbreakDetection = new JailbreakDetection();
+                                jailbreakDetection.detect(getApplicationContext(), jailbreakDetectedFile);
+                            }
+
                             Log.i(TAG, "Initiate startNodeWithArguments(...) call");
 
                             JSONObject env = new JSONObject();
