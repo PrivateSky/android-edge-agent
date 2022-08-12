@@ -334,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
             webSettings.setJavaScriptEnabled(true);
             webSettings.setDomStorageEnabled(true);
             myWebView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+            myWebView.getSettings().setGeolocationEnabled(true);
             myWebView.setWebChromeClient(new WebChromeClient() {
                 @Override
                 public void onPermissionRequest(final PermissionRequest request) {
