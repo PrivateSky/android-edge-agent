@@ -374,13 +374,19 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "Camera permission not granted!");
             return false;
         }
+        Log.i(TAG, "Checking for location permission.");
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Location permission not granted!");
+            return false;
+        }
         return true;
     }
 
     private static final int PERMISSION_REQUEST_CODE = 200;
     private void requestPermission() {
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.CAMERA},
+                new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION},
                 PERMISSION_REQUEST_CODE);
     }
 

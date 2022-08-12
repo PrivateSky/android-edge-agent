@@ -2,7 +2,6 @@ package eu.pharmaledger.epi;
 
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.webkit.GeolocationPermissions;
 
 public class InnerWebViewClient extends WebViewClient {
 
@@ -15,12 +14,4 @@ public class InnerWebViewClient extends WebViewClient {
         //or false otherwise
         return true;
     }
-
-	@Override
-	public void onGeolocationPermissionsShowPrompt(String origin,
-			GeolocationPermissions.Callback callback) {
-		// Always grant permission since the app itself requires location
-		// permission and the user has therefore already granted it
-		callback.invoke(origin, true, false);
-	}
 }
