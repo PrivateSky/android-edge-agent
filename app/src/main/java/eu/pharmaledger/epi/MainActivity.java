@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -334,10 +335,16 @@ public class MainActivity extends AppCompatActivity {
             webSettings.setJavaScriptEnabled(true);
             webSettings.setDomStorageEnabled(true);
             myWebView.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+            myWebView.getSettings().setGeolocationEnabled(true);
             myWebView.setWebChromeClient(new WebChromeClient() {
                 @Override
                 public void onPermissionRequest(final PermissionRequest request) {
                     request.grant(request.getResources());
+                }
+
+                @Override
+                public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+                    callback.invoke(origin, true, false);
                 }
             });
 
@@ -373,13 +380,19 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "Camera permission not granted!");
             return false;
         }
+        Log.i(TAG, "Checking for location permission.");
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Location permission not granted!");
+            return false;
+        }
         return true;
     }
 
     private static final int PERMISSION_REQUEST_CODE = 200;
     private void requestPermission() {
         ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.CAMERA},
+                new String[]{Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION},
                 PERMISSION_REQUEST_CODE);
     }
 

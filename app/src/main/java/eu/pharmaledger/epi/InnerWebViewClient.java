@@ -1,6 +1,5 @@
 package eu.pharmaledger.epi;
 
-
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -15,5 +14,4 @@ public class InnerWebViewClient extends WebViewClient {
         //or false otherwise
         return true;
     }
-
 }
