@@ -71,7 +71,7 @@ public class InnerWebViewClient extends WebViewClient {
             }
 
             try {
-                String assetFilePath = MessageFormat.format("{0}/app{1}", WEBSERVER_RELATIVE_PATH + "/app" + filePath);
+                String assetFilePath = MessageFormat.format("{0}/app{1}", WEBSERVER_RELATIVE_PATH, filePath);
                 InputStream inputStream = assetManager.open(assetFilePath);
                 return new WebResourceResponse(getMimeType(filePath), "UTF-8", inputStream);
             } catch (Exception e) {
