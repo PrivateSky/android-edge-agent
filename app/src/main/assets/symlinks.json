@@ -1,0 +1,18 @@
+[
+  { "originalFile": "libcrypto.so", "symlinkName": "libcrypto.so.3" },
+  { "originalFile": "libicudata.so", "symlinkName": "libicudata.so.71" },
+  { "originalFile": "libicudata.so", "symlinkName": "libicudata.so.71.1" },
+  { "originalFile": "libicui18n.so", "symlinkName": "libicui18n.so.71" },
+  { "originalFile": "libicui18n.so", "symlinkName": "libicui18n.so.71.1" },
+  { "originalFile": "libicuio.so", "symlinkName": "libicuio.so.71" },
+  { "originalFile": "libicuio.so", "symlinkName": "libicuio.so.71.1" },
+  { "originalFile": "libicutest.so", "symlinkName": "libicutest.so.71" },
+  { "originalFile": "libicutest.so", "symlinkName": "libicutest.so.71.1" },
+  { "originalFile": "libicutu.so", "symlinkName": "libicutu.so.71" },
+  { "originalFile": "libicutu.so", "symlinkName": "libicutu.so.71.1" },
+  { "originalFile": "libicuuc.so", "symlinkName": "libicuuc.so.71" },
+  { "originalFile": "libicuuc.so", "symlinkName": "libicuuc.so.71.1" },
+  { "originalFile": "libssl.so", "symlinkName": "libssl.so.3" },
+  { "originalFile": "libz.so", "symlinkName": "libz.so.1" },
+  { "originalFile": "libz.so", "symlinkName": "libz.so.1.2.12" }
+]

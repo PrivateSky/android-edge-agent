@@ -44,15 +44,6 @@ public class InnerWebViewClient extends WebViewClient {
         return type;
     }
 
-    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        //do whatever you want with the url that is clicked inside the webview.
-        //for example tell the webview to load that url.
-        view.loadUrl(url);
-        //return true if this method handled the link event
-        //or false otherwise
-        return true;
-    }
-
     @Nullable
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {

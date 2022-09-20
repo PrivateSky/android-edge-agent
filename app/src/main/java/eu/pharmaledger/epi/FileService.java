@@ -1,10 +1,7 @@
 package eu.pharmaledger.epi;
 
 import android.content.res.AssetManager;
-import android.os.Build;
 import android.util.Log;
-
-import androidx.annotation.RequiresApi;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,7 +10,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
 
 public class FileService {
     private static final String TAG = FileService.class.getCanonicalName();
@@ -61,21 +57,34 @@ public class FileService {
         }
     }
 
-    private boolean copyAsset(AssetManager assetManager, String fromAssetPath, String toPath) {
-        InputStream in = null;
-        OutputStream out = null;
+    public String getAssetContent(AssetManager assetManager, String filePath) {
+        String fileContent = "";
         try {
+            InputStream stream = assetManager.open(filePath);
 
+            int size = stream.available();
+            byte[] buffer = new byte[size];
+            stream.read(buffer);
+            stream.close();
+            fileContent = new String(buffer);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to read asset file: " + filePath, e);
+            throw new RuntimeException(e);
+        }
+
+        return fileContent;
+    }
+
+    private boolean copyAsset(AssetManager assetManager, String fromAssetPath, String toPath) {
+        try {
             File destFile = new File(toPath);
             destFile.createNewFile();
-            in = assetManager.open(fromAssetPath);
-            out = new FileOutputStream(toPath);
+            InputStream in = assetManager.open(fromAssetPath);
+            OutputStream out = new FileOutputStream(toPath);
             copyFile(in, out);
             in.close();
-            in = null;
             out.flush();
             out.close();
-            out = null;
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,11 +113,6 @@ public class FileService {
         }
 
         return sb.toString();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public void copy(File origin, File dest) throws IOException {
-        Files.copy(origin.toPath(), dest.toPath());
     }
 
     private void copyFile(InputStream in, OutputStream out) throws IOException {

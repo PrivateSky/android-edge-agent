@@ -17,12 +17,15 @@ import android.webkit.WebView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.core.app.ActivityCompat;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +35,6 @@ public class AppManager {
     public static final String WEBSERVER_RELATIVE_PATH = NODEJS_PROJECT_FOLDER_NAME + "/" + WEBSERVER_FOLDER_NAME;
 
     private static final String TAG = AppManager.class.getCanonicalName();
-    private static final int PERMISSION_REQUEST_CODE = 200;
 
     private static final String TRUSTLOADER_INDEX_RELATIVE_PATH = "app/loader/index.html";
     private static final String STANDALONE_INDEX_RELATIVE_PATH = "app/index.html";
@@ -74,10 +76,6 @@ public class AppManager {
         return nodeJsFolder;
     }
 
-//    public File getLibsFolder() {
-//        return libsFolder;
-//    }
-
     public void setupInstallation() {
         Log.d(TAG, "APK updated. Trigger re-installation of node asset folder");
 
@@ -92,75 +90,11 @@ public class AppManager {
         long t2 = System.currentTimeMillis();
         Log.d(TAG, "Deletion of folder took: " + (t2 - t1) + " ms");
 
-        String architecture = System.getProperty("os.arch");
-        String libSourceFolder;
-        if ("aarch64".equalsIgnoreCase(architecture)) {
-            libSourceFolder = "arm64-v8a";
-        } else if ("x86_64".equalsIgnoreCase(architecture)) {
-            libSourceFolder = "x86_64";
-        } else if ("i686".equalsIgnoreCase(architecture)) {
-            libSourceFolder = "x86";
-        } else {
-            libSourceFolder = "armeabi-v7a";
-        }
-
-        try {
-            String[] rootFiles = applicationContext.getAssets().list(NODEJS_PROJECT_FOLDER_NAME);
-            for (String rootFile : rootFiles) {
-                if (!rootFile.equalsIgnoreCase(WEBSERVER_FOLDER_NAME)) {
-                    fileService.copyAssetFolder(applicationContext.getAssets(),
-                            NODEJS_PROJECT_FOLDER_NAME + "/" + rootFile, nodeJsFolderPath + "/" + rootFile);
-                }
-            }
-
-            new File(webserverFolderPath).mkdirs();
-            String[] apihubRootFiles = applicationContext.getAssets().list(WEBSERVER_RELATIVE_PATH);
-            for (String apihubRootFile : apihubRootFiles) {
-                if (!apihubRootFile.equalsIgnoreCase("app")) {
-                    String relativeFilePath = WEBSERVER_RELATIVE_PATH + "/" + apihubRootFile;
-                    String[] folderFiles = applicationContext.getAssets().list(relativeFilePath);
-                    if (folderFiles.length != 0) {
-                        // current entry is a folder
-                        new File(webserverFolderPath + "/" + apihubRootFile).mkdirs();
-                    }
-
-                    fileService.copyAssetFolder(applicationContext.getAssets(),
-                            relativeFilePath, webserverFolderPath + "/" + apihubRootFile);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        fileService.copyAssetFolder(applicationContext.getAssets(), libSourceFolder, libsFolder.getAbsolutePath());
-
-        List<List<String>> symlinks = Arrays.asList(
-                Arrays.asList("libcrypto.so", "libcrypto.so.3"),
-                Arrays.asList("libicudata.so", "libicudata.so.71"),
-                Arrays.asList("libicudata.so", "libicudata.so.71.1"),
-                Arrays.asList("libicui18n.so", "libicui18n.so.71"),
-                Arrays.asList("libicui18n.so", "libicui18n.so.71.1"),
-                Arrays.asList("libicuio.so", "libicuio.so.71"),
-                Arrays.asList("libicuio.so", "libicuio.so.71.1"),
-                Arrays.asList("libicutest.so", "libicutest.so.71"),
-                Arrays.asList("libicutest.so", "libicutest.so.71.1"),
-                Arrays.asList("libicutu.so", "libicutu.so.71"),
-                Arrays.asList("libicutu.so", "libicutu.so.71.1"),
-                Arrays.asList("libicuuc.so", "libicuuc.so.71"),
-                Arrays.asList("libicuuc.so", "libicuuc.so.71.1"),
-                Arrays.asList("libssl.so", "libssl.so.3"),
-                Arrays.asList("libz.so", "libz.so.1"),
-                Arrays.asList("libz.so", "libz.so.1.2.12")
-        );
-
-        for (List<String> symlinkConfig : symlinks) {
-            String symlinkPath = libsFolder.getAbsolutePath() + "/" + symlinkConfig.get(1);
-            String originalFilePath = libsFolder.getAbsolutePath() + "/" + symlinkConfig.get(0);
-            SystemUtils.createSymLink(symlinkPath, originalFilePath);
-        }
+        copyApplicationAssets();
+        copyNodeJsDependencyLibs();
 
         long t3 = System.currentTimeMillis();
-        Log.d(TAG, "Folder copy took: " + (t3 - t2) + " ms");
+        Log.d(TAG, "Assets copy took: " + (t3 - t2) + " ms");
 
         saveLastUpdateTime();
     }
@@ -216,32 +150,6 @@ public class AppManager {
         }
     }
 
-    public boolean checkPermission(String permission) {
-        Log.i(TAG, MessageFormat.format("Checking for {0} permission.", permission));
-        if (ContextCompat.checkSelfPermission(mainActivity, permission) != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, MessageFormat.format("Permission {0} not granted.", permission));
-            return false;
-        }
-
-        return true;
-    }
-
-    public void requestPermission(String permission) {
-        ActivityCompat.requestPermissions(mainActivity, new String[]{permission}, PERMISSION_REQUEST_CODE);
-    }
-
-    public void ensurePermission(String permission) {
-        if (!checkPermission(permission)) {
-            requestPermission(permission);
-        }
-    }
-
-    public void ensureLocationPermission() {
-        if (!checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            requestPermission(Manifest.permission.ACCESS_FINE_LOCATION);
-        }
-    }
-
     public boolean wasAPKUpdated() {
         SharedPreferences prefs = applicationContext.getSharedPreferences("NODEJS_MOBILE_PREFS", Context.MODE_PRIVATE);
         long previousLastUpdateTime = prefs.getLong("NODEJS_MOBILE_APK_LastUpdateTime", 0);
@@ -281,8 +189,7 @@ public class AppManager {
         webSettings.setDomStorageEnabled(true);
         webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
         webSettings.setGeolocationEnabled(true);
-//        webSettings.setAllowFileAccessFromFileURLs(true);
-//        webSettings.setAllowUniversalAccessFromFileURLs(true);
+
         webView.setWebChromeClient(new WebChromeClient() {
             private String geolocationOrigin;
             private GeolocationPermissions.Callback geolocationCallback;
@@ -305,6 +212,7 @@ public class AppManager {
                                 }
                             }
                     );
+
             private PermissionRequest request;
             final ActivityResultLauncher<String> getPermission =
                     mainActivity.registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -315,21 +223,30 @@ public class AppManager {
                         }
                     });
 
-
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
+                this.request = request;
+
                 if (isCameraPermission(request)) {
-                    this.request = request;
-                    getPermission.launch(Manifest.permission.CAMERA);
+                    if (hasPermission(Manifest.permission.CAMERA)) {
+                        request.grant(request.getResources());
+                    } else {
+                        getPermission.launch(Manifest.permission.CAMERA);
+                    }
                     return;
                 }
 
-                request.grant(request.getResources());
+                if (hasPermission(request.getResources()[0])) {
+                    request.grant(request.getResources());
+                    return;
+                }
+
+                getPermission.launch(request.getResources()[0]);
             }
 
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
-                if (!checkPermission(Manifest.permission.ACCESS_FINE_LOCATION) && !checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                if (!hasPermission(Manifest.permission.ACCESS_FINE_LOCATION) && !hasPermission(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                     geolocationOrigin = origin;
                     geolocationCallback = callback;
 
@@ -356,5 +273,83 @@ public class AppManager {
         });
 
         WebView.setWebContentsDebuggingEnabled(true);
+    }
+
+    private void copyApplicationAssets() {
+        try {
+            String[] rootFiles = applicationContext.getAssets().list(NODEJS_PROJECT_FOLDER_NAME);
+            for (String rootFile : rootFiles) {
+                if (!rootFile.equalsIgnoreCase(WEBSERVER_FOLDER_NAME)) {
+                    fileService.copyAssetFolder(applicationContext.getAssets(),
+                            NODEJS_PROJECT_FOLDER_NAME + "/" + rootFile, nodeJsFolderPath + "/" + rootFile);
+                }
+            }
+
+            new File(webserverFolderPath).mkdirs();
+            String[] apihubRootFiles = applicationContext.getAssets().list(WEBSERVER_RELATIVE_PATH);
+            for (String apihubRootFile : apihubRootFiles) {
+                if (!apihubRootFile.equalsIgnoreCase("app")) {
+                    String relativeFilePath = WEBSERVER_RELATIVE_PATH + "/" + apihubRootFile;
+                    String[] folderFiles = applicationContext.getAssets().list(relativeFilePath);
+                    if (folderFiles.length != 0) {
+                        // current entry is a folder
+                        new File(webserverFolderPath + "/" + apihubRootFile).mkdirs();
+                    }
+
+                    fileService.copyAssetFolder(applicationContext.getAssets(),
+                            relativeFilePath, webserverFolderPath + "/" + apihubRootFile);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to copy assets folder", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void copyNodeJsDependencyLibs() {
+        try {
+            String libSourceFolder = getLibSourceFolder();
+            fileService.copyAssetFolder(applicationContext.getAssets(), libSourceFolder, libsFolder.getAbsolutePath());
+
+            String symlinksFileContent = fileService.getAssetContent(applicationContext.getAssets(), "symlinks.json");
+            Gson gson = new Gson();
+            SymlinkConfig[] symlinkConfigArray = gson.fromJson(symlinksFileContent, SymlinkConfig[].class);
+            List<SymlinkConfig> symlinkConfigs = new ArrayList<>(Arrays.asList(symlinkConfigArray));
+
+            for (SymlinkConfig symlinkConfig : symlinkConfigs) {
+                String symlinkPath = libsFolder.getAbsolutePath() + "/" + symlinkConfig.getSymlinkName();
+                String originalFilePath = libsFolder.getAbsolutePath() + "/" + symlinkConfig.getOriginalFile();
+                SystemUtils.createSymLink(symlinkPath, originalFilePath);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to copy assets folder", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean hasPermission(String permission) {
+        Log.i(TAG, MessageFormat.format("Checking for {0} permission.", permission));
+        if (ContextCompat.checkSelfPermission(mainActivity, permission) != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, MessageFormat.format("Permission {0} not granted.", permission));
+            return false;
+        }
+
+        return true;
+    }
+
+    @NonNull
+    private String getLibSourceFolder() {
+        String architecture = System.getProperty("os.arch");
+        String libSourceFolder;
+        if ("aarch64".equalsIgnoreCase(architecture)) {
+            libSourceFolder = "arm64-v8a";
+        } else if ("x86_64".equalsIgnoreCase(architecture)) {
+            libSourceFolder = "x86_64";
+        } else if ("i686".equalsIgnoreCase(architecture)) {
+            libSourceFolder = "x86";
+        } else {
+            libSourceFolder = "armeabi-v7a";
+        }
+        return libSourceFolder;
     }
 }
