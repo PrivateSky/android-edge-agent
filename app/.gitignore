@@ -1,3 +1,4 @@
 /build
 .cxx
 /src/main/assets/nodejs-project
+/src/main/assets/preloader.html

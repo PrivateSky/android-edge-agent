@@ -25,25 +25,19 @@ task checkSigningFiles(){
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
     buildToolsVersion "26.0.3"
     defaultConfig {
         applicationId "eu.pharmaledger.epi"
-        minSdkVersion 23
+        minSdkVersion 24
         //noinspection ExpiredTargetSdkVersion
-        targetSdkVersion 23
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                cppFlags ""
-                arguments "-DANDROID_STL=c++_shared"
-            }
-        }
         ndkVersion '21.3.6528147'
         ndk {
-            abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
+             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
     }
 
@@ -75,28 +69,34 @@ android {
             signingConfig signingConfigs.release
         }
     }
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
-    }
-
     // If you want Gradle to package prebuilt native libraries
     // with your APK, modify the default source set configuration
     // to include the directory of your prebuilt .so files as follows.
     sourceSets {
         main {
-//            jniLibs.srcDirs 'libnode/bin/'
+            jni.srcDirs = [] //disable automatic ndk-build call
+            jniLibs.srcDirs = ['libs']
         }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: "libs", include: ['*.so'])
+
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'androidx.activity:activity:1.2.4'
+    implementation "androidx.fragment:fragment:1.3.4"
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'androidx.annotation:annotation:1.4.0'
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation 'com.scottyab:rootbeer-lib:0.1.0'
+    implementation 'com.google.code.gson:gson:2.8.7'
     testImplementation 'junit:junit:4.13.1'
 }
