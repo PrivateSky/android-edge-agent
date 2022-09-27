@@ -1,6 +1,6 @@
 {
     "name": "android-edge-agent",
-    "version": "v1.0.1",
+    "version": "v1.0.2",
     "description": "This is a template for any project that want to use OpenDSU inside an Android application.",
     "main": "index.js",
     "scripts": {
